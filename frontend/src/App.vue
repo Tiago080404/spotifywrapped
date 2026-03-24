@@ -1,7 +1,13 @@
 <script setup lang="ts"></script>
 
 <template>
-      <RouterView />
+  <RouterView />
 </template>
 
-<style scoped></style>
+<style>
+body {
+  background-color: #191414;
+  color: #ffffff;
+  min-height: 100vh;
+}
+</style>

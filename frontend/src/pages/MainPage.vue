@@ -1,8 +1,11 @@
 <template>
-  <TopSongs></TopSongs>
+  <div style="display: flex; justify-content: center;">
+
+    <TopArtists></TopArtists>
+  </div>
 </template>
 <script setup lang="ts">
-import TopSongs from '@/components/TopSongs.vue'
+import TopArtists from '@/components/TopArtists.vue'
 import { onMounted } from 'vue'
 
 onMounted(() => {
@@ -15,3 +18,6 @@ onMounted(() => {
   }
 })
 </script>
+<style>
+
+</style>
