@@ -26,7 +26,6 @@
       </div>
     </div>
   </div>
-
   <div v-else class="loading">Lade deine Top Artists …</div>
 </template>
 
@@ -207,6 +206,7 @@ const getUsersTopArtists = async () => {
 /* ---- Dropdown ---- */
 .dropdown-wrap {
   position: relative;
+  margin-bottom: 1.5rem;
 }
 
 .dropdown {
