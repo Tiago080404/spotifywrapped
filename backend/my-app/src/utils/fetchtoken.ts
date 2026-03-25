@@ -1,5 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
+
+const BASE_URL = process.env.BASE_URL || "http://127.0.0.1:3000";
+
 interface SpotifyTokenResponse {
   access_token: string;
   refresh_token: string;
@@ -10,9 +13,8 @@ interface SpotifyTokenResponse {
 
 export async function fetchSpotifyToken(code: string): Promise<SpotifyTokenResponse> {
   const client_id = process.env.CLIENTID || "";
-
-  var redirect_uri = "http://127.0.0.1:3000/callback";
-  const clienSecret = process.env.CLIENTSECRET!;
+  const redirect_uri = `${BASE_URL}/callback`;
+  const clientSecret = process.env.CLIENTSECRET!;
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
@@ -23,7 +25,7 @@ export async function fetchSpotifyToken(code: string): Promise<SpotifyTokenRespo
       grant_type: "authorization_code",
       code: code,
       redirect_uri: redirect_uri,
-      client_secret: clienSecret,
+      client_secret: clientSecret,
     }),
   });
   const data = await response.json();
