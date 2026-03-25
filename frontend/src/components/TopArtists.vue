@@ -38,16 +38,10 @@ const favArtists = ref<any[]>([])
 const timeRange = ref('medium_term')
 onMounted(async () => {
   spotToken.value = localStorage.getItem('spotify_token') || ''
-  //console.log(timeRange.value)
   await getUsersTopArtists()
 })
 
 const getUsersTopArtists = async () => {
-  /*  const response = await fetch(`https://api.spotify.com/v1/me/top/artists?time_range=${timeRange.value}`, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${spotToken.value}` },
-  })
-  const data = await response.json() */
   favArtists.value = await getTopArtists(spotToken.value, timeRange.value)
 }
 </script>
