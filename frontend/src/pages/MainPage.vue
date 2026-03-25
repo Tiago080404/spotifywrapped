@@ -1,6 +1,5 @@
 <template>
-  <div style="display: flex; justify-content: center;">
-
+  <div style="display: flex; justify-content: center">
     <TopArtists></TopArtists>
   </div>
 </template>
@@ -18,6 +17,4 @@ onMounted(() => {
   }
 })
 </script>
-<style>
-
-</style>
+<style></style>

@@ -1,6 +1,14 @@
 import dotenv from "dotenv";
 dotenv.config();
-export async function fetchSpotifyToken(code): Promise<Object> {
+interface SpotifyTokenResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+  scope: string;
+}
+
+export async function fetchSpotifyToken(code: string): Promise<SpotifyTokenResponse> {
   const client_id = process.env.CLIENTID || "";
 
   var redirect_uri = "http://127.0.0.1:3000/callback";

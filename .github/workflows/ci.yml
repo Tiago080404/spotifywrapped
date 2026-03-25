@@ -1,0 +1,178 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # ─── Frontend ──────────────────────────────────────────────
+  frontend-lint:
+    name: "Frontend: Lint & Format"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Check formatting (Prettier)
+        run: npx prettier --check src/
+
+  frontend-typecheck:
+    name: "Frontend: Type Check"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Run type check
+        run: npx vue-tsc --build --force
+
+  frontend-test:
+    name: "Frontend: Tests"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Run tests
+        run: npx vitest run --reporter=verbose
+
+  frontend-build:
+    name: "Frontend: Build"
+    needs: [frontend-lint, frontend-typecheck, frontend-test]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Build for production
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 7
+
+  # ─── Backend ───────────────────────────────────────────────
+  backend-typecheck:
+    name: "Backend: Type Check"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/my-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/my-app/package-lock.json
+
+      - run: npm ci
+
+      - name: Run type check
+        run: npx tsc --noEmit
+
+  backend-build:
+    name: "Backend: Build"
+    needs: [backend-typecheck]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/my-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/my-app/package-lock.json
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-dist
+          path: backend/my-app/dist
+          retention-days: 7
+
+  # ─── Docker ────────────────────────────────────────────────
+  docker-build:
+    name: "Docker: Build Images"
+    needs: [frontend-build, backend-build]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          tags: spotifywrapped-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend/my-app
+          file: ./backend/my-app/Dockerfile
+          push: false
+          tags: spotifywrapped-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

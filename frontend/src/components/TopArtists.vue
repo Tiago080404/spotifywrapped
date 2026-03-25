@@ -43,13 +43,13 @@ onMounted(async () => {
   await getUsersTopArtists()
 })
 
-const getUsersTopArtists =  async () => {
- /*  const response = await fetch(`https://api.spotify.com/v1/me/top/artists?time_range=${timeRange.value}`, {
+const getUsersTopArtists = async () => {
+  /*  const response = await fetch(`https://api.spotify.com/v1/me/top/artists?time_range=${timeRange.value}`, {
     method: 'GET',
     headers: { Authorization: `Bearer ${spotToken.value}` },
   })
   const data = await response.json() */
-  favArtists.value = await getTopArtists(spotToken.value,timeRange.value)
+  favArtists.value = await getTopArtists(spotToken.value, timeRange.value)
 }
 </script>
 

@@ -31,6 +31,9 @@ app.get("/login", (c) => {
 app.get("/callback", async (c) => {
   const code = c.req.query("code");
   console.log("callback", code);
+  if (!code) {
+    return c.text("Missing authorization code", 400);
+  }
   const data = await fetchSpotifyToken(code);
   const params = new URLSearchParams({
     access_token: data.access_token,

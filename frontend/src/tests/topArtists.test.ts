@@ -8,9 +8,6 @@ const fakeArtists = [
 ]
 
 beforeEach(() => {
-  localStorage.clear()
-  localStorage.setItem('spotify_token', 'fake-token')
-
   globalThis.fetch = vi.fn().mockResolvedValue({
     json: () => Promise.resolve({ items: fakeArtists }),
   })
@@ -28,8 +25,6 @@ beforeEach(() => {
 
   it('')
 }) */
-
-
 
 describe('getTopArtists', () => {
   it('gibt die Artists aus der API-Antwort zurück', async () => {
