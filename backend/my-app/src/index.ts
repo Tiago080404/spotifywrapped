@@ -31,6 +31,7 @@ app.get("/login", (c) => {
 
 app.get("/exchange", async (c) => {
   const code = c.req.query("code");
+  if (!code) return c.json({ error: "code fehlt" }, 400);
   const data = await fetchSpotifyToken(code);
   return c.json({
     access_token: data.access_token,
