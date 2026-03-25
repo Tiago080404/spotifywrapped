@@ -26,7 +26,7 @@ app.get("/login", (c) => {
     state: state,
   });
   console.log("hfjfjdfkdkd");
-return c.json({ url: `https://accounts.spotify.com/authorize?${params}` });
+  return c.json({ url: `https://accounts.spotify.com/authorize?${params}` });
 });
 
 app.get("/exchange", async (c) => {
