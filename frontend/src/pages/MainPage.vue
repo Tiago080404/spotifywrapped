@@ -12,5 +12,4 @@
 import NavBar from '@/components/NavBar.vue'
 import TopArtists from '@/components/TopArtists.vue'
 </script>
-<style>
-</style>
+<style></style>
