@@ -9,7 +9,7 @@
       <div class="divider"></div>
 
       <ul class="menu">
-        <li><a class="menu-item" href="/dashboard">Top Artists</a></li>
+        <li><a class="menu-item" href="/topartists">Top Artists</a></li>
         <li><a class="menu-item" href="/toptracks">Top Tracks</a></li>
       </ul>
     </div>
