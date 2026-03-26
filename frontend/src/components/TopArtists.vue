@@ -1,32 +1,103 @@
 <template>
-  <div class="top-artists" v-if="favArtists.length">
-    <h2 class="title">Top artists</h2>
-    <p class="subtitle">Dein Hörverhalten der letzten Wochen</p>
-    <div class="dropdown-wrap">
-      <select v-model="timeRange" @change="getUsersTopArtists" class="dropdown">
-        <option value="short_term">Letzte 4 Wochen</option>
-        <option value="medium_term">Letzte 6 Monate</option>
-        <option value="long_term">Allzeit</option>
-      </select>
+  <div class="top-artists-view" v-if="favArtists.length">
+    <!-- Header -->
+    <div class="section-header">
+      <div class="header-left">
+        <h2 class="section-title">
+          <span class="title-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </span>
+          Top Artists
+        </h2>
+        <p class="section-sub">Die Artists, die deinen Sound definieren</p>
+      </div>
+      <div class="time-pills">
+        <button v-for="option in timeOptions" :key="option.value"
+          class="pill" :class="{ active: timeRange === option.value }"
+          @click="timeRange = option.value; getUsersTopArtists()">
+          {{ option.label }}
+        </button>
+      </div>
     </div>
-    <div class="grid">
-      <div v-for="(artist, i) in favArtists" :key="artist.id" class="card">
-        <div class="img-wrap">
-          <span class="rank-badge" :class="{ gold: i < 3 }">{{ i + 1 }}</span>
+
+    <!-- Top 3 Podium -->
+    <div class="podium">
+      <div v-for="(artist, i) in favArtists.slice(0, 3)" :key="'podium-' + artist.id"
+        class="podium-card"
+        :class="['podium-' + (i + 1)]"
+        :style="{ animationDelay: (0.2 + i * 0.15) + 's' }"
+        @mouseenter="activeCard = artist.id"
+        @mouseleave="activeCard = null">
+        <div class="podium-rank">{{ i + 1 }}</div>
+        <div class="podium-img-wrap">
+          <img :src="artist.images[0]?.url" :alt="artist.name" loading="lazy" />
+          <div class="podium-img-overlay"></div>
+          <!-- Vinyl record effect for #1 -->
+          <div v-if="i === 0" class="vinyl-ring"></div>
+        </div>
+        <div class="podium-info">
+          <div class="podium-name">{{ artist.name }}</div>
+          <div class="podium-genre">{{ artist.genres?.slice(0, 2).join(' / ') }}</div>
+          <div class="podium-pop">
+            <div class="pop-bar-bg">
+              <div class="pop-bar-fill" :style="{ width: artist.popularity + '%' }">
+                <div class="pop-bar-glow"></div>
+              </div>
+            </div>
+            <span class="pop-value">{{ artist.popularity }}%</span>
+          </div>
+          <a v-if="artist.external_urls?.spotify" class="artist-spotify-link"
+            :href="artist.external_urls.spotify" target="_blank" @click.stop title="In Spotify oeffnen">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+            </svg>
+            <span>Spotify</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rest of artists as list -->
+    <div class="artists-list">
+      <div v-for="(artist, i) in favArtists.slice(3)" :key="artist.id"
+        class="list-item"
+        :style="{ animationDelay: (0.5 + i * 0.06) + 's' }"
+        @mouseenter="activeCard = artist.id"
+        @mouseleave="activeCard = null">
+        <div class="list-rank">{{ i + 4 }}</div>
+        <div class="list-img-wrap">
           <img :src="artist.images[0]?.url" :alt="artist.name" loading="lazy" />
         </div>
-        <div class="artist-name">{{ artist.name }}</div>
-        <div class="artist-genre">{{ artist.genres?.slice(0, 2).join(', ') }}</div>
-        <div class="pop-row">
-          <div class="pop-track">
-            <div class="pop-fill" :style="{ width: artist.popularity + '%' }" />
+        <div class="list-info">
+          <div class="list-name">{{ artist.name }}</div>
+          <div class="list-genre">{{ artist.genres?.slice(0, 2).join(' / ') }}</div>
+        </div>
+        <a v-if="artist.external_urls?.spotify" class="list-spotify-link"
+          :href="artist.external_urls.spotify" target="_blank" @click.stop title="In Spotify oeffnen">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+        </a>
+        <div class="list-pop">
+          <div class="mini-bar-bg">
+            <div class="mini-bar-fill" :style="{ width: artist.popularity + '%' }"></div>
           </div>
-          <span class="pop-num">{{ artist.popularity }}</span>
+          <span class="mini-pop-num">{{ artist.popularity }}</span>
         </div>
       </div>
     </div>
   </div>
-  <div v-else class="loading">Lade deine Top Artists …</div>
+
+  <!-- Loading state -->
+  <div v-else class="loading-state">
+    <div class="loading-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring spinner-ring-2"></div>
+    </div>
+    <p class="loading-text">Lade deine Top Artists</p>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -36,205 +107,540 @@ import { onMounted, ref } from 'vue'
 const spotToken = ref('')
 const favArtists = ref<any[]>([])
 const timeRange = ref('medium_term')
+const activeCard = ref<string | null>(null)
+
+const timeOptions = [
+  { value: 'short_term', label: '4 Wochen' },
+  { value: 'medium_term', label: '6 Monate' },
+  { value: 'long_term', label: 'Allzeit' },
+]
+
 onMounted(async () => {
   spotToken.value = localStorage.getItem('spotify_token') || ''
   await getUsersTopArtists()
 })
 
 const getUsersTopArtists = async () => {
-  favArtists.value = await getTopArtists(spotToken.value, timeRange.value)
+  favArtists.value = []
+  const data = await getTopArtists(spotToken.value, timeRange.value)
+  // Stagger the appearance
+  for (let i = 0; i < data.length; i++) {
+    setTimeout(() => {
+      favArtists.value.push(data[i])
+    }, i * 40)
+  }
 }
 </script>
 
 <style scoped>
-.top-artists {
-  max-width: 720px;
-  padding: 2rem;
+.top-artists-view {
+  width: 100%;
+  max-width: 900px;
+  padding: 2rem 1.5rem;
+  animation: fadeIn 0.5s ease both;
 }
 
-.title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0 0 4px;
+/* ---- Header ---- */
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  gap: 16px;
+  flex-wrap: wrap;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.subtitle {
-  font-size: 0.8rem;
-  opacity: 0.4;
-  margin: 0 0 1.5rem;
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px;
 }
 
-/* ---- Grid ---- */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
+.title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(29, 185, 84, 0.15);
+  border: 1px solid rgba(29, 185, 84, 0.2);
+  color: var(--accent);
 }
 
-/* ---- Card ---- */
-.card {
+.section-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ---- Time pills ---- */
+.time-pills {
+  display: flex;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50px;
+  padding: 4px;
+}
+
+.pill {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 50px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
 }
 
-.card:hover {
-  transform: translateY(-4px);
+.pill:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
 }
 
-.card:hover .img-wrap::after {
+.pill.active {
+  background: var(--accent);
+  color: #000;
+  font-weight: 600;
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+/* ---- Podium ---- */
+.podium {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.podium-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 16px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  overflow: hidden;
+  animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.podium-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.podium-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(29, 185, 84, 0.08);
+}
+
+.podium-card:hover::before {
   opacity: 1;
 }
 
-/* ---- Image ---- */
-.img-wrap {
+/* Podium 1 special glow */
+.podium-1 {
+  order: 2;
+}
+.podium-1:hover {
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 0 60px rgba(255, 215, 0, 0.1);
+}
+
+.podium-2 {
+  order: 1;
+  margin-top: 24px;
+}
+
+.podium-3 {
+  order: 3;
+  margin-top: 24px;
+}
+
+.podium-rank {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  z-index: 3;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.podium-1 .podium-rank {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.3));
+  color: #ffd700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.podium-2 .podium-rank {
+  background: rgba(192, 192, 192, 0.2);
+  color: #c0c0c0;
+}
+
+.podium-3 .podium-rank {
+  background: rgba(205, 127, 50, 0.2);
+  color: #cd7f32;
+}
+
+/* ---- Podium image ---- */
+.podium-img-wrap {
   position: relative;
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
-.img-wrap img {
+.podium-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.podium-card:hover .podium-img-wrap img {
+  transform: scale(1.08);
+}
+
+.podium-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.6) 100%);
+  pointer-events: none;
+}
+
+.vinyl-ring {
+  position: absolute;
+  inset: 0;
+  border: 3px solid rgba(255, 215, 0, 0.15);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+  animation: vinylPulse 3s ease-in-out infinite;
+}
+
+@keyframes vinylPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
+/* ---- Podium info ---- */
+.podium-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.podium-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.podium-genre {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---- Popularity bar ---- */
+.podium-pop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pop-bar-bg {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pop-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  position: relative;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pop-bar-glow {
+  position: absolute;
+  right: 0;
+  top: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.pop-value {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 30px;
+  text-align: right;
+}
+
+/* ---- List items ---- */
+.artists-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.list-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(6px);
+}
+
+.list-rank {
+  width: 24px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.list-img-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s ease;
+}
+
+.list-item:hover .list-img-wrap {
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: scale(1.06);
+}
+
+.list-img-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.img-wrap::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.15);
-  opacity: 0;
-  transition: opacity 0.15s;
+.list-info {
+  flex: 1;
+  min-width: 0;
 }
 
-/* ---- Rank badge ---- */
-.rank-badge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  font-size: 0.7rem;
+.list-name {
+  font-size: 0.88rem;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 1;
-}
-
-.rank-badge.gold {
-  background: rgba(186, 117, 23, 0.85);
-}
-
-/* ---- Text ---- */
-.artist-name {
-  font-size: 0.9rem;
-  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.artist-genre {
-  font-size: 0.7rem;
-  opacity: 0.4;
+.list-genre {
+  font-size: 0.68rem;
+  color: var(--text-muted);
   margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-/* ---- Popularity bar ---- */
-.pop-row {
+.list-pop {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 8px;
+  width: 120px;
+  flex-shrink: 0;
 }
 
-.pop-track {
+.mini-bar-bg {
   flex: 1;
   height: 3px;
-  background: rgba(128, 128, 128, 0.15);
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 2px;
   overflow: hidden;
 }
 
-.pop-fill {
+.mini-bar-fill {
   height: 100%;
   border-radius: 2px;
-  background: #1db954;
-  transition: width 0.5s ease;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.pop-num {
+.mini-pop-num {
   font-size: 0.65rem;
-  opacity: 0.35;
-  min-width: 16px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 20px;
   text-align: right;
 }
 
+/* ---- Spotify links ---- */
+.artist-spotify-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 50px;
+  background: rgba(29, 185, 84, 0.1);
+  border: 1px solid rgba(29, 185, 84, 0.15);
+  color: var(--accent);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  width: fit-content;
+}
+
+.artist-spotify-link:hover {
+  background: var(--accent);
+  color: #000;
+  transform: scale(1.05);
+}
+
+.list-spotify-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(29, 185, 84, 0.08);
+  color: var(--accent);
+  text-decoration: none;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.list-item:hover .list-spotify-link {
+  opacity: 1;
+}
+
+.list-spotify-link:hover {
+  background: var(--accent);
+  color: #000;
+  transform: scale(1.1);
+}
+
 /* ---- Loading ---- */
-.loading {
-  padding: 3rem;
-  text-align: center;
-  opacity: 0.4;
-  font-size: 0.85rem;
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 20px;
+  animation: fadeIn 0.5s ease both;
 }
 
-/* ---- Dark mode ---- */
-@media (prefers-color-scheme: dark) {
-  .img-wrap {
-    background: #222;
-  }
-}
-/* ---- Dropdown ---- */
-.dropdown-wrap {
+.loading-spinner {
   position: relative;
-  margin-bottom: 1.5rem;
+  width: 48px;
+  height: 48px;
 }
 
-.dropdown {
-  appearance: none;
-  -webkit-appearance: none;
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  padding: 8px 36px 8px 16px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
-
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
+.spinner-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spinnerRotate 1s linear infinite;
 }
 
-.dropdown:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
+.spinner-ring-2 {
+  inset: 6px;
+  border-top-color: var(--accent-2);
+  animation-direction: reverse;
+  animation-duration: 0.7s;
 }
 
-.dropdown:focus {
-  border-color: #1db954;
+@keyframes spinnerRotate {
+  to { transform: rotate(360deg); }
 }
 
-.dropdown option {
-  background: #282828;
-  color: #ffffff;
+.loading-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 700px) {
+  .podium {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .podium-1, .podium-2, .podium-3 {
+    order: unset;
+    margin-top: 0;
+  }
+  .section-header {
+    flex-direction: column;
+  }
+  .list-pop {
+    width: 80px;
+  }
 }
 </style>

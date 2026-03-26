@@ -1,52 +1,65 @@
 <template>
-  <div class="grid-container">
-    <div class="div1">
+  <div class="dashboard-layout">
+    <div class="nav-col">
       <NavBar />
     </div>
-    <div class="div2">
+    <main class="main-col">
       <TopTracks />
-    </div>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 import TopTracks from '@/components/TopTracks.vue'
+import { useAudioPlayer } from '@/composables/useAudioPlayer'
+
+const { connectSDK, sdkConnected } = useAudioPlayer()
+
+onMounted(() => {
+  // Ensure SDK is connected when navigating directly to this page
+  if (localStorage.getItem('spotify_token') && !sdkConnected.value) {
+    connectSDK()
+  }
+})
 </script>
 
 <style scoped>
-.grid-container {
+.dashboard-layout {
+  position: relative;
+  z-index: 2;
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: auto 1fr;
   min-height: 100vh;
-  column-gap: 20px;
-  align-items: stretch;
+  gap: 8px;
 }
 
-.div1 {
-  padding: 16px 10px 16px 16px;
+.nav-col {
+  padding: 20px 0 20px 20px;
 }
 
-.div2 {
+.main-col {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 24px 24px 24px 12px;
+  padding: 20px 24px 20px 12px;
+  overflow-y: auto;
+  animation: fadeIn 0.6s ease 0.3s both;
 }
 
 @media (max-width: 900px) {
-  .grid-container {
+  .dashboard-layout {
     grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    row-gap: 12px;
+    padding-bottom: 140px;
   }
 
-  .div1 {
+  .nav-col {
+    padding: 0;
+  }
+
+  .main-col {
     padding: 12px;
-  }
-
-  .div2 {
-    padding: 8px 12px 20px;
   }
 }
 </style>
