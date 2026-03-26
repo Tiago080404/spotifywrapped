@@ -16,7 +16,7 @@
           <img :src="track.album.images[0]?.url" :alt="track.name" loading="lazy" />
         </div>
         <div class="track-name">{{ track.name }}</div>
-        <div class="track-artist">{{ track.artists?.map((a) => a.name).join(', ') }}</div>
+        <div class="track-artist">{{ track.artists?.map((a: any) => a.name).join(', ') }}</div>
         <div class="pop-row">
           <div class="pop-track">
             <div class="pop-fill" :style="{ width: track.popularity + '%' }" />

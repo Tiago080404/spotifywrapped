@@ -237,9 +237,4 @@ const getUsersTopArtists = async () => {
   background: #282828;
   color: #ffffff;
 }
-
-.dropdown option:hover, .dropdown option:focus {
-  background: #1db954;
-  color: #181818;
-}
 </style>
