@@ -1,53 +1,53 @@
 <template>
-  <div class="top-artists" v-if="favArtists.length">
-    <h2 class="title">Top artists</h2>
+  <div class="top-tracks" v-if="favTracks.length">
+    <h2 class="title">Top Tracks</h2>
     <p class="subtitle">Dein Hörverhalten der letzten Wochen</p>
     <div class="dropdown-wrap">
-      <select v-model="timeRange" @change="getUsersTopArtists" class="dropdown">
+      <select v-model="timeRange" @change="getUsersTopTracks" class="dropdown">
         <option value="short_term">Letzte 4 Wochen</option>
         <option value="medium_term">Letzte 6 Monate</option>
         <option value="long_term">Allzeit</option>
       </select>
     </div>
     <div class="grid">
-      <div v-for="(artist, i) in favArtists" :key="artist.id" class="card">
+      <div v-for="(track, i) in favTracks" :key="track.id" class="card">
         <div class="img-wrap">
           <span class="rank-badge" :class="{ gold: i < 3 }">{{ i + 1 }}</span>
-          <img :src="artist.images[0]?.url" :alt="artist.name" loading="lazy" />
+          <img :src="track.album.images[0]?.url" :alt="track.name" loading="lazy" />
         </div>
-        <div class="artist-name">{{ artist.name }}</div>
-        <div class="artist-genre">{{ artist.genres?.slice(0, 2).join(', ') }}</div>
+        <div class="track-name">{{ track.name }}</div>
+        <div class="track-artist">{{ track.artists?.map((a) => a.name).join(', ') }}</div>
         <div class="pop-row">
           <div class="pop-track">
-            <div class="pop-fill" :style="{ width: artist.popularity + '%' }" />
+            <div class="pop-fill" :style="{ width: track.popularity + '%' }" />
           </div>
-          <span class="pop-num">{{ artist.popularity }}</span>
+          <span class="pop-num">{{ track.popularity }}</span>
         </div>
       </div>
     </div>
   </div>
-  <div v-else class="loading">Lade deine Top Artists …</div>
+  <div v-else class="loading">Lade deine Top Tracks …</div>
 </template>
 
 <script setup lang="ts">
-import { getTopArtists } from '@/services/spotify'
+import { getTopSongs } from '@/services/spotify'
 import { onMounted, ref } from 'vue'
 
 const spotToken = ref('')
-const favArtists = ref<any[]>([])
+const favTracks = ref<any[]>([])
 const timeRange = ref('medium_term')
 onMounted(async () => {
   spotToken.value = localStorage.getItem('spotify_token') || ''
-  await getUsersTopArtists()
+  await getUsersTopTracks()
 })
 
-const getUsersTopArtists = async () => {
-  favArtists.value = await getTopArtists(spotToken.value, timeRange.value)
+const getUsersTopTracks = async () => {
+  favTracks.value = await getTopSongs(spotToken.value, timeRange.value)
 }
 </script>
 
 <style scoped>
-.top-artists {
+.top-tracks {
   max-width: 720px;
   padding: 2rem;
 }
@@ -64,14 +64,12 @@ const getUsersTopArtists = async () => {
   margin: 0 0 1.5rem;
 }
 
-/* ---- Grid ---- */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 20px;
 }
 
-/* ---- Card ---- */
 .card {
   cursor: pointer;
   transition: transform 0.15s ease;
@@ -85,7 +83,6 @@ const getUsersTopArtists = async () => {
   opacity: 1;
 }
 
-/* ---- Image ---- */
 .img-wrap {
   position: relative;
   width: 100%;
@@ -111,7 +108,6 @@ const getUsersTopArtists = async () => {
   transition: opacity 0.15s;
 }
 
-/* ---- Rank badge ---- */
 .rank-badge {
   position: absolute;
   top: 8px;
@@ -135,8 +131,7 @@ const getUsersTopArtists = async () => {
   background: rgba(186, 117, 23, 0.85);
 }
 
-/* ---- Text ---- */
-.artist-name {
+.track-name {
   font-size: 0.9rem;
   font-weight: 500;
   white-space: nowrap;
@@ -144,7 +139,7 @@ const getUsersTopArtists = async () => {
   text-overflow: ellipsis;
 }
 
-.artist-genre {
+.track-artist {
   font-size: 0.7rem;
   opacity: 0.4;
   margin-top: 2px;
@@ -153,7 +148,6 @@ const getUsersTopArtists = async () => {
   text-overflow: ellipsis;
 }
 
-/* ---- Popularity bar ---- */
 .pop-row {
   display: flex;
   align-items: center;
@@ -183,7 +177,6 @@ const getUsersTopArtists = async () => {
   text-align: right;
 }
 
-/* ---- Loading ---- */
 .loading {
   padding: 3rem;
   text-align: center;
@@ -191,13 +184,12 @@ const getUsersTopArtists = async () => {
   font-size: 0.85rem;
 }
 
-/* ---- Dark mode ---- */
 @media (prefers-color-scheme: dark) {
   .img-wrap {
     background: #222;
   }
 }
-/* ---- Dropdown ---- */
+
 .dropdown-wrap {
   position: relative;
   margin-bottom: 1.5rem;

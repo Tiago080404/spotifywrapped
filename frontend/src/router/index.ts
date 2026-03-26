@@ -1,14 +1,14 @@
 import Login from '@/pages/Login.vue'
 import Dashboard from '../pages/Dashboard.vue'
-import MainPage from '@/pages/MainPage.vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import TopTracksPage from '@/pages/TopTracksPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', component: MainPage },
     { path: '/dashboard', component: Dashboard },
-    { path: '/login', component: Login },
+    { path: '/toptracks', component: TopTracksPage },
+    { path: '/', component: Login },
   ],
 })
 
