@@ -36,13 +36,53 @@ import { onMounted, ref } from 'vue'
 const spotToken = ref('')
 const favTracks = ref<any[]>([])
 const timeRange = ref('medium_term')
+const userId = ref(localStorage.getItem('user_id'))
+
 onMounted(async () => {
   spotToken.value = localStorage.getItem('spotify_token') || ''
-  await getUsersTopTracks()
+  if ((await checkCachedData()) === true) {
+  } else {
+    await getUsersTopTracks()
+  }
 })
 
 const getUsersTopTracks = async () => {
-  favTracks.value = await getTopSongs(spotToken.value, timeRange.value)
+  if ((await checkCachedData()) === true) {
+    return 
+  } else {
+    console.log('fetching from spot')
+    favTracks.value = await getTopSongs(spotToken.value, timeRange.value)
+    await setCachedData()
+  }
+}
+const checkCachedData = async () => {
+  const response = await fetch(
+    `http://localhost:3000/getCachedData?userId=${userId.value}&timeRange=${timeRange.value}`,
+    {
+      method: 'GET',
+    },
+  )
+  const data = await response.json()
+  if (!data || !data.cached) {
+    console.log('ist null')
+    return null
+  }
+  favTracks.value = data.cached
+  return true
+}
+
+const setCachedData = async () => {
+  const response = await fetch('http://localhost:3000/setCachedData', {
+    method: 'POST',
+    body: JSON.stringify({
+      userId: userId.value,
+      favTracks: favTracks.value,
+      timeRange: timeRange.value,
+    }),
+  })
+  if (response.ok) {
+    console.log('fdata cached')
+  }
 }
 </script>
 

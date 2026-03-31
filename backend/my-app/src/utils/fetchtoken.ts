@@ -14,7 +14,7 @@ export async function fetchSpotifyToken(code: string) {
     body: new URLSearchParams({
       grant_type: "authorization_code",
       code: code,
-      redirect_uri: redirect_uri, // <-- muss matchen!
+      redirect_uri: redirect_uri,
     }),
   });
   return res.json();
