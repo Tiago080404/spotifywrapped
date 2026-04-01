@@ -24,5 +24,8 @@ export async function getCachingData(
 ) {
   console.log(userId, timeRange, setting);
   const res = await client.get(`user:${userId}:${setting}:${timeRange}`);
+  if (!res) {
+    return null;
+  }
   return JSON.parse(res);
 }
