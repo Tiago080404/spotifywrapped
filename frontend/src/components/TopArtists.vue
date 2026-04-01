@@ -36,13 +36,52 @@ import { onMounted, ref } from 'vue'
 const spotToken = ref('')
 const favArtists = ref<any[]>([])
 const timeRange = ref('medium_term')
+const userId = ref(localStorage.getItem('user_id'))
+
 onMounted(async () => {
   spotToken.value = localStorage.getItem('spotify_token') || ''
+
   await getUsersTopArtists()
 })
 
 const getUsersTopArtists = async () => {
-  favArtists.value = await getTopArtists(spotToken.value, timeRange.value)
+  if ((await checkCachedData()) === true) {
+    console.log('already cached')
+    return
+  } else {
+    favArtists.value = await getTopArtists(spotToken.value, timeRange.value)
+    await setCachedData()
+  }
+}
+const checkCachedData = async () => {
+  const response = await fetch(
+    `http://localhost:3000/getCachedData?userId=${userId.value}&timeRange=${timeRange.value}&setting=${'top-artists'}`,
+    {
+      method: 'GET',
+    },
+  )
+  const data = await response.json()
+  if (!data || !data.cached) {
+    console.log('ist null')
+    return null
+  }
+  favArtists.value = data.cached
+  return true
+}
+
+const setCachedData = async () => {
+  const response = await fetch('http://localhost:3000/setArtistCache', {
+    method: 'POST',
+    body: JSON.stringify({
+      userId: userId.value,
+      favArtists: favArtists.value,
+      timeRange: timeRange.value,
+      setting: 'top-artists',
+    }),
+  })
+  if (response.ok) {
+    console.log('fdata cached')
+  }
 }
 </script>
 

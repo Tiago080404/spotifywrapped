@@ -9,15 +9,20 @@ export async function setCachingData(
   data: object,
   time: number,
   timeRange: string,
+  setting: string,
 ) {
   await client.set(
-    `user:${userId}:top-tracks:${timeRange}`,
+    `user:${userId}:${setting}:${timeRange}`,
     JSON.stringify(data),
     { EX: time },
   );
 }
-export async function getCachingData(userId: string, timeRange: string) {
-
-  const res = await client.get(`user:${userId}:top-tracks:${timeRange}`);
+export async function getCachingData(
+  userId: string,
+  timeRange: string,
+  setting: string,
+) {
+  console.log(userId, timeRange, setting);
+  const res = await client.get(`user:${userId}:${setting}:${timeRange}`);
   return JSON.parse(res);
 }

@@ -51,15 +51,34 @@ app.get("/start", (c) => {
 app.get("/getCachedData", async (c) => {
   const userId = c.req.query("userId") || "";
   const timeRange = c.req.query("timeRange") || "";
-  console.log(userId,'und die zeot',timeRange)
-  const cached = await getCachingData(userId, timeRange);
-  console.log(cached)
+  const setting = c.req.query("setting") || "";
+  console.log(userId, "und die zeot", timeRange);
+  const cached = await getCachingData(userId, timeRange, setting);
+  //console.log(cached);
   return c.json({ cached });
 });
 
 app.post("/setCachedData", async (c) => {
   const body = await c.req.json();
-  await setCachingData(body.userId, body.favTracks, 3600, body.timeRange);
+  await setCachingData(
+    body.userId,
+    body.favTracks,
+    3600,
+    body.timeRange,
+    body.setting,
+  );
+  return c.json({ success: true });
+});
+
+app.post("/setArtistCache", async (c) => {
+  const body = await c.req.json();
+  await setCachingData(
+    body.userId,
+    body.favArtists,
+    3600,
+    body.timeRange,
+    body.setting,
+  );
   return c.json({ success: true });
 });
 

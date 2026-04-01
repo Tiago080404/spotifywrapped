@@ -40,15 +40,13 @@ const userId = ref(localStorage.getItem('user_id'))
 
 onMounted(async () => {
   spotToken.value = localStorage.getItem('spotify_token') || ''
-  if ((await checkCachedData()) === true) {
-  } else {
-    await getUsersTopTracks()
-  }
+  await getUsersTopTracks()
 })
 
 const getUsersTopTracks = async () => {
   if ((await checkCachedData()) === true) {
-    return 
+    console.log('already cached')
+    return
   } else {
     console.log('fetching from spot')
     favTracks.value = await getTopSongs(spotToken.value, timeRange.value)
@@ -57,7 +55,7 @@ const getUsersTopTracks = async () => {
 }
 const checkCachedData = async () => {
   const response = await fetch(
-    `http://localhost:3000/getCachedData?userId=${userId.value}&timeRange=${timeRange.value}`,
+    `http://localhost:3000/getCachedData?userId=${userId.value}&timeRange=${timeRange.value}&setting=${'top-tracks'}`,
     {
       method: 'GET',
     },
@@ -78,6 +76,7 @@ const setCachedData = async () => {
       userId: userId.value,
       favTracks: favTracks.value,
       timeRange: timeRange.value,
+      setting: 'top-tracks',
     }),
   })
   if (response.ok) {
