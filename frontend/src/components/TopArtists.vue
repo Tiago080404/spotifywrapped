@@ -9,15 +9,40 @@
         <option value="long_term">Allzeit</option>
       </select>
     </div>
-    <div class="grid">
-      <div v-for="(artist, i) in favArtists" :key="artist.id" class="card">
-        <div class="img-wrap">
-          <span class="rank-badge" :class="{ gold: i < 3 }">{{ i + 1 }}</span>
-          <img :src="artist.images[0]?.url" :alt="artist.name" loading="lazy" />
+    <div class="podium" v-if="podiumArtists.length">
+      <div
+        v-for="entry in podiumArtists"
+        :key="entry.item.id"
+        class="podium-item"
+        :class="`slot-${entry.slot}`"
+      >
+        <div class="podium-card">
+          <div class="img-wrap">
+            <span class="rank-badge gold">{{ entry.rank }}</span>
+            <img :src="entry.item.images[0]?.url" :alt="entry.item.name" loading="lazy" />
+          </div>
+          <div class="artist-name">{{ entry.item.name }}</div>
+          <div class="artist-genre">{{ entry.item.genres?.slice(0, 2).join(', ') }}</div>
+          <div class="pop-row">
+            <div class="pop-track">
+              <div class="pop-fill" :style="{ width: entry.item.popularity + '%' }" />
+            </div>
+            <span class="pop-num">{{ entry.item.popularity }}</span>
+          </div>
         </div>
-        <div class="artist-name">{{ artist.name }}</div>
-        <div class="artist-genre">{{ artist.genres?.slice(0, 2).join(', ') }}</div>
-        <div class="pop-row">
+        <div class="pedestal">Platz {{ entry.rank }}</div>
+      </div>
+    </div>
+
+    <div class="vertical-list" v-if="remainingArtists.length">
+      <div v-for="(artist, i) in remainingArtists" :key="artist.id" class="list-row">
+        <div class="list-rank">{{ i + 4 }}</div>
+        <img class="list-image" :src="artist.images[0]?.url" :alt="artist.name" loading="lazy" />
+        <div class="list-meta">
+          <div class="artist-name">{{ artist.name }}</div>
+          <div class="artist-genre">{{ artist.genres?.slice(0, 2).join(', ') }}</div>
+        </div>
+        <div class="list-pop">
           <div class="pop-track">
             <div class="pop-fill" :style="{ width: artist.popularity + '%' }" />
           </div>
@@ -31,7 +56,7 @@
 
 <script setup lang="ts">
 import { getTopArtists } from '@/services/spotify'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const spotToken = ref('')
 const favArtists = ref<any[]>([])
@@ -83,6 +108,19 @@ const setCachedData = async () => {
     console.log('fdata cached')
   }
 }
+
+const topThreeArtists = computed(() => favArtists.value.slice(0, 3))
+const remainingArtists = computed(() => favArtists.value.slice(3))
+const podiumArtists = computed(() => {
+  const top = topThreeArtists.value
+  const arranged = [
+    top[1] ? { item: top[1], rank: 2, slot: 'second' } : null,
+    top[0] ? { item: top[0], rank: 1, slot: 'first' } : null,
+    top[2] ? { item: top[2], rank: 3, slot: 'third' } : null,
+  ]
+
+  return arranged.filter(Boolean) as { item: any; rank: number; slot: string }[]
+})
 </script>
 
 <style scoped>
@@ -103,11 +141,96 @@ const setCachedData = async () => {
   margin: 0 0 1.5rem;
 }
 
-/* ---- Grid ---- */
-.grid {
+/* ---- Podium ---- */
+.podium {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.podium-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.podium-card {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.podium-card:hover {
+  transform: translateY(-4px);
+}
+
+.slot-first .pedestal {
+  height: 128px;
+}
+
+.slot-second .pedestal {
+  height: 96px;
+}
+
+.slot-third .pedestal {
+  height: 82px;
+}
+
+.pedestal {
+  margin-top: 10px;
+  border-radius: 12px 12px 0 0;
+  background: linear-gradient(180deg, rgba(29, 185, 84, 0.45), rgba(29, 185, 84, 0.2));
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 0;
+}
+
+.vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.list-row {
+  display: grid;
+  grid-template-columns: 34px 56px minmax(0, 1fr) 120px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.list-rank {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+.list-image {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+}
+
+.list-meta {
+  min-width: 0;
+}
+
+.list-pop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ---- Card ---- */
@@ -275,5 +398,43 @@ const setCachedData = async () => {
 .dropdown option {
   background: #282828;
   color: #ffffff;
+}
+
+@media (max-width: 900px) {
+  .podium {
+    grid-template-columns: 1fr;
+  }
+
+  .slot-first {
+    order: 1;
+  }
+
+  .slot-second {
+    order: 2;
+  }
+
+  .slot-third {
+    order: 3;
+  }
+
+  .slot-first .pedestal,
+  .slot-second .pedestal,
+  .slot-third .pedestal {
+    height: 70px;
+  }
+
+  .list-row {
+    grid-template-columns: 30px 48px minmax(0, 1fr);
+  }
+
+  .list-pop {
+    grid-column: 1 / -1;
+    padding-left: 40px;
+  }
+
+  .list-image {
+    width: 48px;
+    height: 48px;
+  }
 }
 </style>
