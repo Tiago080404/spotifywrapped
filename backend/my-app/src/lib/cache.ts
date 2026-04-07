@@ -1,4 +1,4 @@
-import { client } from "./redis.js";
+import { client } from './redis.js'
 
 export async function setCachingData(
   userId: string,
@@ -7,20 +7,12 @@ export async function setCachingData(
   timeRange: string,
   setting: string,
 ) {
-  await client.set(
-    `user:${userId}:${setting}:${timeRange}`,
-    JSON.stringify(data),
-    { EX: time },
-  );
+  await client.set(`user:${userId}:${setting}:${timeRange}`, JSON.stringify(data), { EX: time })
 }
-export async function getCachingData(
-  userId: string,
-  timeRange: string,
-  setting: string,
-) {
-  const res = await client.get(`user:${userId}:${setting}:${timeRange}`);
+export async function getCachingData(userId: string, timeRange: string, setting: string) {
+  const res = await client.get(`user:${userId}:${setting}:${timeRange}`)
   if (!res) {
-    return null;
+    return null
   }
-  return JSON.parse(res);
+  return JSON.parse(res)
 }
