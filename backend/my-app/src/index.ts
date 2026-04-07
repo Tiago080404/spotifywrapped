@@ -4,7 +4,8 @@ import { generateRandomString } from "./utils/generateString.js";
 import { fetchSpotifyToken } from "./utils/fetchtoken.js";
 import dotenv from "dotenv";
 import { cors } from "hono/cors";
-import { client, getCachingData, setCachingData } from "./lib/redis.js";
+import { getCachingData, setCachingData } from "./lib/redis.js";
+import { getTopGenresFromTracks } from "./lib/soundcharts.js";
 dotenv.config();
 const redirect_uri = "http://127.0.0.1:5173/dashboard";
 const app = new Hono();
@@ -80,6 +81,65 @@ app.post("/setArtistCache", async (c) => {
     body.setting,
   );
   return c.json({ success: true });
+});
+
+app.post("/soundcharts/top-genres", async (c) => {
+  const body = (await c.req.json()) as {
+    userId?: string;
+    timeRange?: string;
+    tracks?: Array<{
+      name?: string;
+      artist?: string;
+    }>;
+  };
+  console.log("trackckksksksks", body.tracks);
+  const userId = body.userId || "";
+  const timeRange = body.timeRange || "medium_term";
+  const tracks = (body.tracks || []).filter(
+    (track): track is { name: string; artist: string } =>
+      Boolean(track.name && track.artist),
+  );
+  const cacheSetting = "top-genres";
+
+  console.log("[Genres] /soundcharts/top-genres request", {
+    userId,
+    timeRange,
+    incomingTracks: body.tracks?.length || 0,
+    validTracks: tracks.length,
+    sampleTracks: tracks,
+  });
+
+  if (userId) {
+    const cached = await getCachingData(userId, timeRange, cacheSetting);
+
+    if (cached) {
+      console.log("[Genres] cache hit", {
+        userId,
+        timeRange,
+        cachedCount: Array.isArray(cached) ? cached.length : undefined,
+      });
+      return c.json({ genres: cached });
+    }
+
+    console.log("[Genres] cache miss", { userId, timeRange });
+  }
+
+  const genres = await getTopGenresFromTracks(tracks);
+  console.log("[Genres] computed genres", {
+    count: genres.length,
+    top: genres.slice(0, 5),
+  });
+
+  if (userId) {
+    await setCachingData(userId, genres, 3600, timeRange, cacheSetting);
+    console.log("[Genres] cache updated", {
+      userId,
+      timeRange,
+      count: genres.length,
+    });
+  }
+
+  return c.json({ genres });
 });
 
 serve(

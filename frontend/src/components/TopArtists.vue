@@ -67,6 +67,7 @@ onMounted(async () => {
   spotToken.value = localStorage.getItem('spotify_token') || ''
 
   await getUsersTopArtists()
+  console.log(favArtists)
 })
 
 const getUsersTopArtists = async () => {
