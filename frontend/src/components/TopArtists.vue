@@ -67,12 +67,10 @@ onMounted(async () => {
   spotToken.value = localStorage.getItem('spotify_token') || ''
 
   await getUsersTopArtists()
-  console.log(favArtists)
 })
 
 const getUsersTopArtists = async () => {
   if ((await checkCachedData()) === true) {
-    console.log('already cached')
     return
   } else {
     favArtists.value = await getTopArtists(spotToken.value, timeRange.value)
@@ -88,7 +86,6 @@ const checkCachedData = async () => {
   )
   const data = await response.json()
   if (!data || !data.cached) {
-    console.log('ist null')
     return null
   }
   favArtists.value = data.cached
@@ -106,7 +103,6 @@ const setCachedData = async () => {
     }),
   })
   if (response.ok) {
-    console.log('fdata cached')
   }
 }
 

@@ -89,20 +89,11 @@ export async function getTopGenresFromTracks(tracks: SpotifyTrackInput[]) {
   let matchedSongs = 0;
   let tracksWithGenres = 0;
 
-  console.log("[Genres] Soundcharts lookup start", {
-    tracks: tracks.length,
-    sampleTracks: tracks.slice(0, 3),
-  });
-
   for (const track of tracks) {
     try {
       const songUuid = await searchSongUuid(track);
 
       if (!songUuid) {
-        console.log("[Genres] no Soundcharts match", {
-          trackName: track.name,
-          artist: track.artist,
-        });
         continue;
       }
 
@@ -129,12 +120,6 @@ export async function getTopGenresFromTracks(tracks: SpotifyTrackInput[]) {
 
       if (genresForSong.size > 0) {
         tracksWithGenres += 1;
-      } else {
-        console.log("[Genres] song has no genres", {
-          trackName: track.name,
-          artist: track.artist,
-          songUuid,
-        });
       }
     } catch (error) {
       console.error("[Genres] Soundcharts genre lookup failed", {
@@ -144,13 +129,6 @@ export async function getTopGenresFromTracks(tracks: SpotifyTrackInput[]) {
       });
     }
   }
-
-  console.log("[Genres] Soundcharts lookup summary", {
-    inputTracks: tracks.length,
-    matchedSongs,
-    tracksWithGenres,
-    uniqueGenres: counts.size,
-  });
 
   return Array.from(counts.entries())
     .map(([genre, count]) => ({ genre, count }))

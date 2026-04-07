@@ -77,10 +77,8 @@ onMounted(async () => {
 
 const getUsersTopTracks = async () => {
   if ((await checkCachedData()) === true) {
-    console.log('already cached')
     return
   } else {
-    console.log('fetching from spot')
     favTracks.value = await getTopSongs(spotToken.value, timeRange.value)
     await setCachedData()
   }
@@ -94,7 +92,6 @@ const checkCachedData = async () => {
   )
   const data = await response.json()
   if (!data || !data.cached) {
-    console.log('ist null')
     return null
   }
   favTracks.value = data.cached
@@ -112,7 +109,6 @@ const setCachedData = async () => {
     }),
   })
   if (response.ok) {
-    console.log('fdata cached')
   }
 }
 

@@ -82,12 +82,6 @@ async function exchangeCodeIfPresent() {
 async function loadTopGenres() {
   loading.value = true
   errorMessage.value = ''
-  console.log('[Genres] loadTopGenres:start', {
-    timeRange: timeRange.value,
-    hasToken: Boolean(spotToken.value || localStorage.getItem('spotify_token')),
-    hasUserId: Boolean(userId.value || localStorage.getItem('user_id')),
-  })
-
   try {
     if (!spotToken.value) {
       spotToken.value = localStorage.getItem('spotify_token') || ''
@@ -102,7 +96,6 @@ async function loadTopGenres() {
     }
 
     const tracks = await getTopSongs(spotToken.value, timeRange.value)
-    console.log('[Genres] Spotify top songs loaded', { count: tracks.length })
 
     const trackInputs: TrackInput[] = tracks
       .map((track: any) => ({
@@ -111,30 +104,17 @@ async function loadTopGenres() {
       }))
       .filter((track: TrackInput) => Boolean(track.name && track.artist))
 
-    console.log('[Genres] Track inputs prepared', {
-      count: trackInputs.length,
-      sample: trackInputs.slice(0, 3),
-    })
-
     topGenres.value = await getTopGenresFromSoundcharts({
       userId: userId.value,
       timeRange: timeRange.value,
       tracks: trackInputs,
     })
 
-    console.log('[Genres] Genres loaded', {
-      count: topGenres.value.length,
-      top: topGenres.value.slice(0, 5),
-    })
   } catch (error) {
     console.error('[Genres] loadTopGenres failed', error)
     errorMessage.value = 'Die Genres konnten gerade nicht geladen werden.'
     topGenres.value = []
   } finally {
-    console.log('[Genres] loadTopGenres:done', {
-      loading: false,
-      error: errorMessage.value || null,
-    })
     loading.value = false
   }
 }
