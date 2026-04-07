@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import { cors } from "hono/cors";
 import { getCachingData, setCachingData } from "./lib/redis.js";
 import { getTopGenresFromTracks } from "./lib/soundcharts.js";
+import { client } from "./lib/redis.js";
+import { getCachingData, setCachingData } from "./lib/cache.js";
 dotenv.config();
 const redirect_uri = "http://127.0.0.1:5173/dashboard";
 const app = new Hono();
