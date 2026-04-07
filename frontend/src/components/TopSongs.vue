@@ -1,5 +1,5 @@
 <template>
-  <div v-for="topSong in topSongs">{{ topSong.name }}</div>
+  <div v-for="(topSong, index) in topSongs" :key="index">{{ topSong.name }}</div>
 </template>
 <script setup lang="ts">
 import { getTopSongs } from '@/services/spotify'
