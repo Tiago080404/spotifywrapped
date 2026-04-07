@@ -4,7 +4,7 @@ import { generateRandomString } from "./utils/generateString.js";
 import { fetchSpotifyToken } from "./utils/fetchtoken.js";
 import dotenv from "dotenv";
 import { cors } from "hono/cors";
-import { client } from "./lib/redis.js";
+import { getTopGenresFromTracks } from "./lib/soundcharts.js";
 import { getCachingData, setCachingData } from "./lib/cache.js";
 dotenv.config();
 const redirect_uri = "http://127.0.0.1:5173/dashboard";
@@ -53,9 +53,7 @@ app.get("/getCachedData", async (c) => {
   const userId = c.req.query("userId") || "";
   const timeRange = c.req.query("timeRange") || "";
   const setting = c.req.query("setting") || "";
-  console.log(userId, "und die zeot", timeRange);
   const cached = await getCachingData(userId, timeRange, setting);
-  //console.log(cached);
   return c.json({ cached });
 });
 
@@ -83,12 +81,46 @@ app.post("/setArtistCache", async (c) => {
   return c.json({ success: true });
 });
 
+app.post("/soundcharts/top-genres", async (c) => {
+  const body = (await c.req.json()) as {
+    userId?: string;
+    timeRange?: string;
+    tracks?: Array<{
+      name?: string;
+      artist?: string;
+    }>;
+  };
+  const userId = body.userId || "";
+  const timeRange = body.timeRange || "medium_term";
+  const tracks = (body.tracks || []).filter(
+    (track): track is { name: string; artist: string } =>
+      Boolean(track.name && track.artist),
+  );
+  const cacheSetting = "top-genres";
+
+  if (userId) {
+    const cached = await getCachingData(userId, timeRange, cacheSetting);
+
+    if (cached) {
+      return c.json({ genres: cached });
+    }
+  }
+
+  const genres = await getTopGenresFromTracks(tracks);
+
+  if (userId) {
+    await setCachingData(userId, genres, 3600, timeRange, cacheSetting);
+  }
+
+  return c.json({ genres });
+});
+
 serve(
   {
     fetch: app.fetch,
     port: 3000,
   },
   (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`);
+  
   },
 );
