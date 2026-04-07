@@ -29,6 +29,10 @@ services:
       - CLIENTSECRET=${CLIENTSECRET}
       - BASE_URL=${BASE_URL:-http://localhost:3000}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
@@ -36,3 +40,15 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    expose:
+      - "6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s

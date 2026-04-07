@@ -36,36 +36,48 @@ Results are cached in Redis so you don't hit the API on every page load.
 
 Copy the `.env.example` file, rename it to `.env`, and fill in the Client ID and
 Client Secret from your Spotify Developer app.
+
 Then copy the same file into the backend folder so the server can read it too:
-cp .env backend/my-app/.env
+
+    cp .env backend/my-app/.env
 
 ## Getting started (local)
 
 You need three things running: Redis, the backend, and the frontend.
+
 **1. Start Redis**
+
 Make sure Redis is running on `localhost:6379`. If you have Docker but want to
 run only Redis in a container:
-docker run -d -p 6379:6379 redis
+
+    docker run -d -p 6379:6379 redis
+
 **2. Start the backend**
-cd backend/my-app
-npm install
-npm run dev
+
+    cd backend/my-app
+    npm install
+    npm run dev
+
 The backend starts on http://localhost:3000.
+
 **3. Start the frontend**
+
 Open a second terminal:
-cd frontend
-npm install
-npm run dev
+
+    cd frontend
+    npm install
+    npm run dev
+
 The frontend starts on http://127.0.0.1:5173. Open it in your browser and log
 in with Spotify.
 
 ## Getting started (Docker)
 
 Make sure your `.env` file is set up (see above), then:
-docker compose up --build
-The app will be available on http://localhost:80. Note that the current Docker
-Compose setup does not include a Redis service, so you'll need to either add one
-or point the backend to an external Redis instance.
+
+    docker compose up --build
+
+The app will be available on http://localhost:80.
 
 ## Project structure
 
@@ -89,5 +101,3 @@ or point the backend to an external Redis instance.
 
     cd frontend && npx vitest run
     cd backend/my-app && npx vitest run
-
----
