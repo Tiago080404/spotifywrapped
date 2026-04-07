@@ -109,7 +109,6 @@ async function loadTopGenres() {
       timeRange: timeRange.value,
       tracks: trackInputs,
     })
-
   } catch (error) {
     console.error('[Genres] loadTopGenres failed', error)
     errorMessage.value = 'Die Genres konnten gerade nicht geladen werden.'
